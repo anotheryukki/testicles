@@ -306,6 +306,7 @@
             <button class="btn bevel-out" id="stamp">stamp a ball</button>
             <button class="btn bevel-out" id="clear">File &gt; New</button>
             <button class="btn mint bevel-out" id="save">Save As... .png</button>
+            <button class="btn mint bevel-out" id="tweet">𝕏 tweet it</button>
           </div>
           <div class="gallery" style="margin-top:22px">
             <img class="wiggle" src="assets/mascot.png" alt="$TESTICLES mascot flexing with a money bag">
@@ -543,6 +544,32 @@
   // ---- dialogs & jokes ----
   const dlg = document.getElementById('dlg'), msg = document.getElementById('dlg-msg');
   const say = t => { msg.textContent = t; dlg.classList.add('show'); dlg.querySelector('.foot button').focus(); };
+
+  // ---- tweet the drawing ----
+  // X intents can't carry images: share the file natively where possible,
+  // otherwise put the PNG on the clipboard (or download it) and open a prefilled tweet.
+  const TWEET = 'just drew my $TESTICLES in mspaint 🥜🥜\n\n@testicles_soll\nCA: 4pQgJqZrWpX1zCaoCF8AXq34t2igv5javg1UvyzGpump';
+  document.getElementById('tweet').onclick = async () => {
+    const blob = await new Promise(r => pad.toBlob(r, 'image/png'));
+    const file = new File([blob], 'my_testicles.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], text: TWEET }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    let note;
+    try { // clipboard must be written while this tab still has focus
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      note = 'Drawing copied to clipboard!\n\nPress Ctrl+V (Cmd+V) in the tweet box to attach it.';
+    } catch {
+      const a = document.createElement('a');
+      a.download = file.name; a.href = URL.createObjectURL(blob); a.click();
+      note = 'Drawing saved as my_testicles.png.\n\nAttach it to your tweet with the image button.';
+    }
+    const intent = window.open('https://x.com/intent/post?text=' + encodeURIComponent(TWEET), '_blank');
+    if (intent) intent.opener = null;
+    else note += '\n\nPopup blocked: allow popups for this site and hit tweet again.';
+    say(note);
+  };
   dlg.querySelectorAll('[data-close]').forEach(b => b.onclick = () => dlg.classList.remove('show'));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') dlg.classList.remove('show'); });
   const NOPE = [
