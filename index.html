@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$TESTICLES.bmp - Paint</title>
+<meta name="description" content="$TESTICLES — the hairiest memecoin on pump.fun. Paired with $HYPE.">
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --hl-bg: #0f1a1f;
+    --hl-deep: #072723;
+    --hl-mint: #97fce4;
+    --hl-teal: #50d2c1;
+    --hl-dim: #1e3a3a;
+    --face: #c0c0c0;
+    --hi: #ffffff;
+    --lo: #808080;
+    --dk: #000000;
+    --title: #072723;
+    --title2: #50d2c1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #008080 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23072723'/%3E%3Crect width='1' height='1' fill='%230f1a1f'/%3E%3C/svg%3E");
+    font-family: Tahoma, "MS Sans Serif", Geneva, sans-serif;
+    font-size: 13px;
+    color: #000;
+    padding: 12px;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M3 21 L7 13 L18 2 L22 6 L11 17 Z' fill='%2397fce4' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M3 21 L7 13 L11 17 Z' fill='black'/%3E%3C/svg%3E") 2 22, auto;
+  }
+
+  /* ---------- win98 chrome ---------- */
+  .bevel-out { border: 2px solid; border-color: var(--hi) var(--dk) var(--dk) var(--hi); box-shadow: inset -1px -1px var(--lo), inset 1px 1px #dfdfdf; }
+  .bevel-in  { border: 2px solid; border-color: var(--lo) var(--hi) var(--hi) var(--lo); box-shadow: inset 1px 1px var(--dk); }
+
+  .window {
+    max-width: 1180px; margin: 0 auto; background: var(--face);
+    display: flex; flex-direction: column; min-height: calc(100vh - 24px);
+  }
+  .titlebar {
+    background: linear-gradient(90deg, var(--title), var(--title2));
+    color: #fff; font-weight: bold; padding: 3px 4px 3px 6px;
+    display: flex; align-items: center; gap: 6px; user-select: none;
+  }
+  .titlebar img { width: 16px; height: 16px; image-rendering: pixelated; }
+  .titlebar .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tb-btn {
+    width: 18px; height: 16px; background: var(--face); color: #000; font: bold 11px/10px Tahoma, sans-serif;
+    display: grid; place-items: center; padding: 0; cursor: pointer;
+  }
+  .tb-btn:active { border-color: var(--dk) var(--hi) var(--hi) var(--dk); }
+
+  .menubar { display: flex; gap: 2px; padding: 2px 4px; flex-wrap: wrap; }
+  .menubar a {
+    color: #000; text-decoration: none; padding: 2px 7px;
+  }
+  .menubar a::first-letter { text-decoration: underline; }
+  .menubar a:hover { background: var(--hl-deep); color: var(--hl-mint); }
+
+  .main { flex: 1; display: flex; gap: 4px; padding: 0 4px 4px; min-height: 0; }
+
+  .toolbox { width: 58px; flex: none; display: flex; flex-direction: column; gap: 6px; padding-top: 2px; }
+  .tools { display: grid; grid-template-columns: 25px 25px; gap: 0; }
+  .tool {
+    width: 25px; height: 25px; background: var(--face); padding: 0; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .tool svg { width: 16px; height: 16px; }
+  .tool.on { border-color: var(--dk) var(--hi) var(--hi) var(--dk); box-shadow: inset 1px 1px var(--lo); background: #e0e0e0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2'%3E%3Crect width='1' height='1' fill='white'/%3E%3C/svg%3E"); }
+  .tool-opts { height: 66px; width: 50px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 3px; }
+  .tool-opts button { border: 0; background: none; padding: 1px 4px; cursor: pointer; display: block; width: 100%; }
+  .tool-opts button.on { background: var(--hl-deep); }
+  .tool-opts span { display: block; margin: 0 auto; background: #000; border-radius: 50%; }
+  .tool-opts button.on span { background: #fff; }
+
+  .canvas-wrap { flex: 1; overflow: auto; background: #808080; padding: 6px; min-width: 0; }
+  .canvas {
+    background: var(--hl-bg); color: var(--hl-mint);
+    font-family: "Comic Neue", "Comic Sans MS", cursive;
+    position: relative; box-shadow: 1px 1px 0 #000;
+  }
+  .canvas::after { /* resize handles like paint */
+    content: ""; position: absolute; right: -4px; bottom: -4px; width: 4px; height: 4px; background: var(--hl-deep);
+  }
+
+  /* ---------- content ---------- */
+  section { padding: 36px 28px; position: relative; }
+  section + section { border-top: 3px dashed var(--hl-dim); }
+
+  .scribble {
+    font-family: "Comic Neue", "Comic Sans MS", cursive; font-weight: 700;
+    color: var(--hl-mint); line-height: .95; margin: 0;
+    text-shadow: 3px 3px 0 var(--hl-deep), 4px 4px 0 #000;
+  }
+  h1.scribble { font-size: clamp(54px, 11vw, 132px); letter-spacing: -2px; transform: rotate(-2deg); }
+  h2.scribble { font-size: clamp(34px, 6vw, 60px); transform: rotate(-1.2deg); display: inline-block; margin-bottom: 18px; }
+  h2.scribble::after {
+    content: ""; display: block; height: 10px; margin-top: 2px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='10'%3E%3Cpath d='M0 6 Q7 0 15 6 T30 6 T45 6 T60 6' fill='none' stroke='%2350d2c1' stroke-width='3'/%3E%3C/svg%3E") repeat-x;
+  }
+  p { font-size: 19px; line-height: 1.45; max-width: 62ch; }
+  .hand { font-family: "Comic Neue", "Comic Sans MS", cursive; }
+
+  .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center; }
+  .hero-art { position: relative; }
+  .hero-art img { width: 100%; display: block; border: 3px solid #000; transform: rotate(1.5deg); background: var(--hl-deep); }
+  .hero .sub { font-size: 24px; font-weight: 700; color: #fff; transform: rotate(-1deg); margin: 14px 0 22px; }
+  .hero .sub b { color: var(--hl-mint); background: var(--hl-deep); padding: 0 6px; }
+
+  .btn {
+    display: inline-block; font-family: Tahoma, sans-serif; font-size: 15px; font-weight: bold; color: #000;
+    background: var(--face); padding: 9px 18px; text-decoration: none; cursor: pointer; margin: 0 8px 10px 0;
+  }
+  .btn:active { border-color: var(--dk) var(--hi) var(--hi) var(--dk); box-shadow: inset 1px 1px var(--lo); }
+  .btn.mint { background: var(--hl-mint); }
+
+  .ca {
+    display: flex; align-items: stretch; max-width: 520px; margin-top: 8px; background: var(--face); padding: 4px; gap: 4px;
+  }
+  .ca label { padding: 6px 4px; font-weight: bold; }
+  .ca input { flex: 1; min-width: 0; font: 13px "Courier New", monospace; padding: 4px 6px; background: #fff; }
+  .ca button { font: bold 12px Tahoma, sans-serif; background: var(--face); padding: 0 10px; cursor: pointer; }
+
+  .sticker { position: absolute; font-family: "Comic Neue", cursive; font-weight: 700; color: #000; background: #fff200; padding: 4px 10px; border: 2px solid #000; transform: rotate(8deg); font-size: 18px; }
+
+  .marquee { overflow: hidden; background: var(--hl-mint); color: var(--hl-bg); border-block: 3px solid #000; white-space: nowrap; font: 700 22px "Pixelify Sans", monospace; padding: 6px 0; }
+  .marquee span { display: inline-block; padding-left: 100%; animation: mq 22s linear infinite; }
+  @keyframes mq { to { transform: translateX(-100%); } }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+  .pair img { width: 100%; border: 3px solid #000; transform: rotate(-1.5deg); display: block; }
+  .pair .eq { font: 700 30px "Pixelify Sans", monospace; color: #fff; margin: 12px 0; }
+  .pair .eq em { color: var(--hl-mint); font-style: normal; }
+
+    background: var(--hl-deep); border: 3px solid var(--hl-mint); padding: 18px; border-radius: 3px 14px 4px 18px / 16px 4px 14px 3px;
+  }
+
+  .steps { list-style: none; padding: 0; margin: 0; counter-reset: s; display: grid; gap: 14px; }
+  .steps li { counter-increment: s; display: flex; gap: 14px; align-items: flex-start; font-size: 19px; }
+  .steps li::before {
+    content: counter(s); flex: none; width: 42px; height: 42px; display: grid; place-items: center;
+    background: var(--hl-mint); color: #000; font: 700 24px "Pixelify Sans", monospace; border: 2px solid #000; border-radius: 50% 45% 55% 40%;
+  }
+  .steps b { color: #fff; }
+
+  /* doodle section */
+  .doodle {
+    background: var(--face); padding: 4px; display: inline-grid; max-width: 100%;
+    grid-template-columns: 54px minmax(0, 1fr); grid-template-areas: "side pad" "pal pal"; gap: 4px;
+    color: #000; font-family: Tahoma, sans-serif;
+  }
+  .doodle-side { grid-area: side; display: flex; flex-direction: column; gap: 6px; }
+  .doodle-frame { grid-area: pad; background: #808080; padding: 4px; min-width: 0; }
+  .doodle-palette { grid-area: pal; display: flex; align-items: center; gap: 4px; }
+  #pad { display: block; background: #fff; max-width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+  @media (max-width: 820px) {
+    .doodle { display: grid; grid-template-columns: 1fr; grid-template-areas: "side" "pad" "pal"; }
+    .doodle-side { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .doodle-side .tools { grid-template-columns: repeat(12, 25px); }
+    .doodle-side .tool-opts { flex-direction: row; height: 25px; width: auto; margin: 0; }
+    .doodle-palette .swatches { grid-auto-columns: 14px; }
+  }
+  .doodle-actions { margin-top: 12px; }
+
+  .gallery { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .gallery img { width: 220px; max-width: 100%; border: 3px solid #000; background: #fff; }
+
+  footer { padding: 26px 28px 40px; font-size: 15px; color: #7fb8ad; }
+  footer a { color: var(--hl-mint); }
+
+  /* palette + status */
+  .palette-row { display: flex; align-items: center; gap: 4px; padding: 4px; }
+  .current { width: 34px; height: 34px; position: relative; flex: none; background: var(--face); }
+  .current i { position: absolute; width: 14px; height: 14px; border: 1px solid; border-color: var(--lo) var(--hi) var(--hi) var(--lo); }
+  .current .fg { left: 5px; top: 5px; z-index: 1; }
+  .current .bg { right: 5px; bottom: 5px; }
+  .swatches { display: grid; grid-template-rows: 16px 16px; grid-auto-flow: column; grid-auto-columns: 16px; gap: 0; }
+  .sw { width: 16px; height: 16px; border: 1px solid; border-color: var(--lo) var(--hi) var(--hi) var(--lo); box-shadow: inset 1px 1px #000; cursor: pointer; padding: 0; }
+
+  .statusbar { display: flex; gap: 2px; padding: 2px; }
+  .statusbar div { padding: 2px 6px; white-space: nowrap; overflow: hidden; }
+  .statusbar .s1 { flex: 1; }
+  .statusbar .s2, .statusbar .s3 { width: 110px; }
+
+  /* dialog */
+  .dlg-bg { position: fixed; inset: 0; display: none; place-items: center; z-index: 50; padding: 16px; }
+  .dlg-bg.show { display: grid; }
+  .dlg { background: var(--face); width: 340px; max-width: 100%; }
+  .dlg .body { display: flex; gap: 14px; padding: 18px 16px 10px; align-items: center; font-size: 13px; }
+  .dlg .body img { width: 40px; }
+  .dlg .foot { text-align: center; padding: 6px 0 14px; }
+  .dlg .foot button { min-width: 76px; padding: 4px; background: var(--face); font: 12px Tahoma, sans-serif; cursor: pointer; }
+
+  .wiggle { animation: wig 1.8s ease-in-out infinite; display: inline-block; }
+  @keyframes wig { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg) scale(1.03); } }
+  @media (prefers-reduced-motion: reduce) { .wiggle, .marquee span { animation: none; } .marquee span { padding-left: 0; } }
+
+  @media (max-width: 820px) {
+    body { padding: 0; }
+    .window { min-height: 100vh; }
+    .toolbox { display: none; }
+    .hero, .pair { grid-template-columns: 1fr; }
+    section { padding: 28px 16px; }
+    .statusbar .s2, .statusbar .s3 { display: none; }
+    .swatches { grid-auto-columns: 14px; grid-template-rows: 14px 14px; }
+    .sw { width: 14px; height: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="window bevel-out">
+  <div class="titlebar">
+    <img src="assets/logo.png" alt="">
+    <span class="t">$TESTICLES.bmp - Paint</span>
+    <button class="tb-btn bevel-out" data-nope aria-label="Minimize">_</button>
+    <button class="tb-btn bevel-out" data-nope aria-label="Maximize">□</button>
+    <button class="tb-btn bevel-out" data-nope aria-label="Close" style="margin-left:2px">×</button>
+  </div>
+
+  <nav class="menubar">
+    <a href="#home">File</a>
+    <a href="#about">Edit</a>
+    <a href="#pair">View</a>
+    <a href="#buy">Colors</a>
+    <a href="#draw">Draw</a>
+    <a href="https://x.com/testicles_soll" target="_blank" rel="noopener">Twitter</a>
+    <a href="#" data-help>Help</a>
+  </nav>
+
+  <div class="main">
+    <aside class="toolbox">
+      <div class="tools" data-tools></div>
+      <div class="tool-opts bevel-in" data-sizes></div>
+    </aside>
+
+    <div class="canvas-wrap bevel-in" id="scroller">
+      <div class="canvas">
+
+        <section id="home" class="hero">
+          <div>
+            <h1 class="scribble">$TESTICLES</h1>
+            <div class="sub hand">the hairiest coin on <b>pump.fun</b>.<br>paired with <b>$HYPE</b>. two of them. obviously.</div>
+            <a class="btn mint bevel-out" href="https://pump.fun/coin/4pQgJqZrWpX1zCaoCF8AXq34t2igv5javg1UvyzGpump" target="_blank" rel="noopener">BUY ON PUMP.FUN</a>
+            <a class="btn bevel-out" href="https://x.com/testicles_soll" target="_blank" rel="noopener">𝕏 twitter</a>
+            <a class="btn bevel-out" href="#draw">draw ur own</a>
+            <div class="ca bevel-out">
+              <label for="ca">CA:</label>
+              <input id="ca" class="bevel-in" value="4pQgJqZrWpX1zCaoCF8AXq34t2igv5javg1UvyzGpump" readonly>
+              <button class="bevel-out" id="copy">Copy</button>
+            </div>
+          </div>
+          <div class="hero-art">
+            <img src="assets/hero.png" alt="$TESTICLES blob riding a rocket to the moon, drawn in MS Paint">
+            <div class="sticker" style="right:-6px; top:-14px;">made in mspaint™</div>
+          </div>
+        </section>
+
+        <div class="marquee"><span>$TESTICLES/$HYPE &nbsp;✦&nbsp; hairy hands only &nbsp;✦&nbsp; no jeets in the sack &nbsp;✦&nbsp; fresh off pump.fun &nbsp;✦&nbsp; drawn with a mouse on a 2003 dell &nbsp;✦&nbsp; $TESTICLES/$HYPE &nbsp;✦&nbsp; always come in pairs &nbsp;✦&nbsp;</span></div>
+
+        <section id="about">
+          <h2 class="scribble">wtf is this</h2>
+          <p class="hand">$TESTICLES is a fully dumb, fully community memecoin born on pump.fun. One mint-green peanut. Several stray hairs. Zero utility, maximum swing.</p>
+          <p class="hand">Everything good comes in pairs. <b style="color:#fff">$HYPE</b> needed a partner. Now it has <b style="color:#fff">$TESTICLES</b>. We trade together, we dangle together.</p>
+        </section>
+
+        <section id="pair" class="pair">
+          <img src="assets/pair.png" alt="Two blobs labelled $TESTICLES and $HYPE holding hands">
+          <div>
+            <h2 class="scribble">the pair</h2>
+            <div class="eq">$TESTICLES <em>+</em> $HYPE <em>=</em> ❤</div>
+            <p class="hand">Spiritually paired, not financially. When $HYPE goes up, the sack gets heavier. When $TESTICLES goes up, $HYPE gets a little blush. Symbiotic. Biological. Natural.</p>
+          </div>
+        </section>
+
+        <section id="buy">
+          <h2 class="scribble">how 2 buy</h2>
+          <ol class="steps hand">
+            <li><span><b>Get a Solana wallet.</b> Phantom, Solflare, whatever. Download it and save your seed phrase somewhere safe.</span></li>
+            <li><span><b>Get some SOL.</b> Buy it on an exchange and send it to your wallet.</span></li>
+            <li><span><b>Go to pump.fun.</b> Open the $TESTICLES page and connect your wallet. Check the CA matches the one at the top of this page. Fakes have no hairs.</span></li>
+            <li><span><b>Grab a pair.</b> Swap SOL for $TESTICLES. Hold with both hands.</span></li>
+          </ol>
+          <p style="margin-top:22px"><a class="btn mint bevel-out" href="https://pump.fun/coin/4pQgJqZrWpX1zCaoCF8AXq34t2igv5javg1UvyzGpump" target="_blank" rel="noopener">open pump.fun</a></p>
+        </section>
+
+        <section id="draw">
+          <h2 class="scribble">draw ur own balls</h2>
+          <p class="hand">Pick a tool, pick a color (right-click a color for the background), draw. Save it and post it.</p>
+          <div class="doodle bevel-out">
+            <div class="doodle-side">
+              <div class="tools" data-tools></div>
+              <div class="tool-opts bevel-in" data-sizes></div>
+            </div>
+            <div class="doodle-frame bevel-in"><canvas id="pad" width="760" height="420"></canvas></div>
+            <div class="doodle-palette">
+              <div class="current bevel-in"><i class="fg"></i><i class="bg"></i></div>
+              <div class="swatches" data-swatches></div>
+            </div>
+          </div>
+          <div class="doodle-actions">
+            <button class="btn bevel-out" id="stamp">stamp a ball</button>
+            <button class="btn bevel-out" id="clear">File &gt; New</button>
+            <button class="btn mint bevel-out" id="save">Save As... .png</button>
+          </div>
+          <div class="gallery" style="margin-top:22px">
+            <img class="wiggle" src="assets/mascot.png" alt="$TESTICLES mascot flexing with a money bag">
+            <p class="hand" style="max-width:36ch">this is the mascot. he's been to the gym. he's been to the moon. he has never been to a barber.</p>
+          </div>
+        </section>
+
+        <footer class="hand">
+          $TESTICLES is a memecoin with no intrinsic value or expectation of financial return. Not affiliated with Hyperliquid or pump.fun. Not financial advice, not medical advice. Check yourself regularly. 🥜<br>
+          <a href="https://x.com/testicles_soll" target="_blank" rel="noopener">x.com/testicles_soll</a>
+        </footer>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="current bevel-in"><i class="fg"></i><i class="bg"></i></div>
+    <div class="swatches" data-swatches></div>
+  </div>
+  <div class="statusbar">
+    <div class="s1 bevel-in" id="status">For Help, click Help Topics on the Help Menu.</div>
+    <div class="s2 bevel-in" id="coords">0,0</div>
+    <div class="s3 bevel-in">$TESTICLES/$HYPE</div>
+  </div>
+</div>
+
+<div class="dlg-bg" id="dlg">
+  <div class="dlg bevel-out" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+    <div class="titlebar"><span class="t" id="dlg-t">Paint</span><button class="tb-btn bevel-out" data-close aria-label="Close">×</button></div>
+    <div class="body"><img src="assets/logo.png" alt=""><div id="dlg-msg"></div></div>
+    <div class="foot"><button class="bevel-out" data-close>OK</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---- palette: hyperliquid first, then classic paint ----
+  const COLORS = [
+    '#000000','#ffffff','#0f1a1f','#97fce4','#072723','#50d2c1','#1e3a3a','#c0ffef',
+    '#808080','#c0c0c0','#800000','#ff0000','#808000','#ffff00','#008000','#00ff00',
+    '#008080','#00ffff','#000080','#0000ff','#800080','#ff00ff','#ff8040','#ffb6c1'
+  ];
+  let fg = '#97fce4', bg = '#0f1a1f';
+  const paintCurrent = () => {
+    document.querySelectorAll('.current .fg').forEach(el => el.style.background = fg);
+    document.querySelectorAll('.current .bg').forEach(el => el.style.background = bg);
+  };
+  document.querySelectorAll('[data-swatches]').forEach(sw => COLORS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'sw'; b.style.background = c; b.title = c; b.setAttribute('aria-label', 'color ' + c);
+    b.onclick = () => { fg = c; paintCurrent(); };
+    b.oncontextmenu = e => { e.preventDefault(); bg = c; paintCurrent(); };
+    sw.appendChild(b);
+  }));
+  paintCurrent();
+
+  // ---- tools ----
+  const ICONS = {
+    select:  '<rect x="2" y="2" width="12" height="12" fill="none" stroke="#000" stroke-dasharray="2 1"/>',
+    eraser:  '<path d="M3 11 L9 5 L13 9 L7 15 Z" fill="#ffb6c1" stroke="#000"/><path d="M3 11 L7 15" stroke="#000"/>',
+    fill:    '<path d="M4 6 L9 1 L14 6 L9 11 Z" fill="#c0c0c0" stroke="#000"/><path d="M13 8 q2 4 0 5" fill="#50d2c1" stroke="#000"/>',
+    picker:  '<path d="M3 13 L10 6 L12 8 L5 15 Z" fill="#fff" stroke="#000"/><circle cx="12" cy="4" r="2.5" fill="#000"/>',
+    pencil:  '<path d="M2 14 L4 10 L12 2 L14 4 L6 12 Z" fill="#ffd34d" stroke="#000"/><path d="M2 14 L4 10 L6 12 Z" fill="#000"/>',
+    brush:   '<path d="M9 2 L14 7 L10 10 L6 6 Z" fill="#8b5a2b" stroke="#000"/><path d="M6 6 L10 10 Q6 15 2 14 Q2 9 6 6" fill="#50d2c1" stroke="#000"/>',
+    spray:   '<rect x="5" y="6" width="6" height="9" fill="#c0c0c0" stroke="#000"/><rect x="6" y="3" width="4" height="3" fill="#000"/><g fill="#000"><rect x="1" y="1" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/></g>',
+    text:    '<text x="3" y="13" font-size="13" font-weight="bold" font-family="serif">A</text>',
+    line:    '<path d="M2 14 L14 2" stroke="#000" stroke-width="1.5"/>',
+    rect:    '<rect x="2" y="4" width="12" height="9" fill="none" stroke="#000" stroke-width="1.5"/>',
+    ellipse: '<ellipse cx="8" cy="8" rx="6" ry="4.5" fill="none" stroke="#000" stroke-width="1.5"/>',
+    ball:    '<path d="M3 5 Q8 3 8 8 Q8 13 13 11 Q15 6 11 4 Q8 3 8 8 Q8 13 3 12 Q1 8 3 5" fill="#97fce4" stroke="#000"/>'
+  };
+  const TIP = {
+    select: 'Selects a rectangular part of the picture. (jk it does nothing)',
+    eraser: 'Erases a portion of the picture, using the selected eraser shape.',
+    fill: 'Fills an area with the current drawing color.',
+    picker: 'Picks up a color from the picture for drawing.',
+    pencil: 'Draws a free-form line one pixel wide.',
+    brush: 'Draws using a brush with the selected shape and size.',
+    spray: 'Draws using an airbrush of the selected size.',
+    text: 'Inserts text into the picture.',
+    line: 'Draws a straight line with the selected line width.',
+    rect: 'Draws a rectangle with the selected fill style.',
+    ellipse: 'Draws an ellipse with the selected fill style.',
+    ball: 'Stamps a $TESTICLES. Essential tool.'
+  };
+  let tool = 'brush', size = 4;
+  const status = document.getElementById('status');
+  const DEFAULT_STATUS = status.textContent;
+  // two toolboxes (window sidebar + drawing pad) share one state
+  document.querySelectorAll('[data-tools]').forEach(toolsEl => Object.keys(ICONS).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'tool bevel-out' + (k === tool ? ' on' : '');
+    b.dataset.tool = k; b.title = k; b.setAttribute('aria-label', k);
+    b.innerHTML = '<svg viewBox="0 0 16 16">' + ICONS[k] + '</svg>';
+    b.onclick = () => {
+      tool = k;
+      document.querySelectorAll('.tool').forEach(t => t.classList.toggle('on', t.dataset.tool === k));
+      if (!b.closest('#draw')) document.getElementById('draw').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    b.onmouseenter = () => status.textContent = TIP[k];
+    b.onmouseleave = () => status.textContent = DEFAULT_STATUS;
+    toolsEl.appendChild(b);
+  }));
+  document.querySelectorAll('[data-sizes]').forEach(sizesEl => [2, 4, 8].forEach(s => {
+    const b = document.createElement('button');
+    b.className = s === size ? 'on' : '';
+    b.dataset.size = s;
+    b.innerHTML = `<span style="width:${s + 2}px;height:${s + 2}px"></span>`;
+    b.setAttribute('aria-label', 'size ' + s);
+    b.onclick = () => {
+      size = s;
+      document.querySelectorAll('[data-size]').forEach(x => x.classList.toggle('on', +x.dataset.size === s));
+    };
+    sizesEl.appendChild(b);
+  }));
+
+  // ---- doodle pad ----
+  const pad = document.getElementById('pad');
+  const ctx = pad.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#0f1a1f'; ctx.fillRect(0, 0, pad.width, pad.height);
+
+  const pos = e => {
+    const r = pad.getBoundingClientRect();
+    return { x: Math.round((e.clientX - r.left) * pad.width / r.width), y: Math.round((e.clientY - r.top) * pad.height / r.height) };
+  };
+  const hexToRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+
+  function flood(x, y, hex) {
+    const { width: w, height: h } = pad;
+    const img = ctx.getImageData(0, 0, w, h), d = img.data;
+    const i0 = (y * w + x) * 4, target = [d[i0], d[i0 + 1], d[i0 + 2]];
+    const [r, g, b] = hexToRgb(hex);
+    const near = i => Math.abs(d[i] - target[0]) + Math.abs(d[i + 1] - target[1]) + Math.abs(d[i + 2] - target[2]) < 60;
+    if (Math.abs(r - target[0]) + Math.abs(g - target[1]) + Math.abs(b - target[2]) === 0) return;
+    const stack = [x, y], seen = new Uint8Array(w * h);
+    while (stack.length) {
+      const py = stack.pop(), px = stack.pop();
+      if (px < 0 || py < 0 || px >= w || py >= h) continue;
+      const p = py * w + px;
+      if (seen[p]) continue; seen[p] = 1;
+      const i = p * 4;
+      if (!near(i)) continue;
+      d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+      stack.push(px + 1, py, px - 1, py, px, py + 1, px, py - 1);
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function stampBall(x, y, s = 1) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = fg; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(-30, 0, 30, 34, 0, 0, Math.PI * 2);
+    ctx.ellipse(30, 4, 32, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-30, -12, 60, 22);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 9; i++) {
+      const a = Math.random() * Math.PI * 2, cx = i % 2 ? 30 : -30, rr = i % 2 ? 36 : 32;
+      const sx = cx + Math.cos(a) * rr, sy = Math.sin(a) * rr;
+      ctx.beginPath(); ctx.moveTo(sx, sy);
+      ctx.lineTo(sx + Math.cos(a) * (8 + Math.random() * 10), sy + Math.sin(a) * (8 + Math.random() * 10)); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  let drawing = false, start = null, last = null, snapshot = null, color = fg;
+  const stroke = (a, b, w) => {
+    ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  };
+  const spray = p => {
+    ctx.fillStyle = color;
+    const r = size * 4;
+    for (let i = 0; i < 18; i++) {
+      const a = Math.random() * Math.PI * 2, d = Math.random() * r;
+      ctx.fillRect(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, 1.5, 1.5);
+    }
+  };
+
+  pad.addEventListener('contextmenu', e => e.preventDefault());
+  pad.addEventListener('pointerdown', e => {
+    const p = pos(e);
+    color = e.button === 2 ? bg : fg;
+    if (tool === 'fill') return flood(p.x, p.y, color);
+    if (tool === 'picker') {
+      const [r, g, b] = ctx.getImageData(p.x, p.y, 1, 1).data;
+      fg = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join(''); paintCurrent(); return;
+    }
+    if (tool === 'ball') return stampBall(p.x, p.y, 0.6 + Math.random() * 0.6);
+    if (tool === 'text') {
+      const t = prompt('Type your text:', '$TESTICLES');
+      if (t) { ctx.fillStyle = color; ctx.font = `bold ${10 + size * 5}px "Comic Neue", "Comic Sans MS", cursive`; ctx.fillText(t, p.x, p.y); }
+      return;
+    }
+    if (tool === 'select') return;
+    pad.setPointerCapture(e.pointerId);
+    drawing = true; start = last = p;
+    snapshot = ctx.getImageData(0, 0, pad.width, pad.height);
+    if (tool === 'spray') spray(p);
+    else if (tool === 'pencil' || tool === 'brush' || tool === 'eraser') pointerMove(e);
+  });
+
+  const coords = document.getElementById('coords');
+  function pointerMove(e) {
+    const p = pos(e);
+    coords.textContent = p.x + ',' + p.y;
+    if (!drawing) return;
+    if (tool === 'pencil') stroke(last, p, 1);
+    else if (tool === 'brush') stroke(last, p, size * 2);
+    else if (tool === 'eraser') { const c = color; color = bg; stroke(last, p, size * 4); color = c; }
+    else if (tool === 'spray') spray(p);
+    else {
+      ctx.putImageData(snapshot, 0, 0);
+      ctx.strokeStyle = color; ctx.lineWidth = size; ctx.beginPath();
+      if (tool === 'line') { ctx.moveTo(start.x, start.y); ctx.lineTo(p.x, p.y); }
+      if (tool === 'rect') ctx.rect(start.x, start.y, p.x - start.x, p.y - start.y);
+      if (tool === 'ellipse') ctx.ellipse((start.x + p.x) / 2, (start.y + p.y) / 2, Math.abs(p.x - start.x) / 2, Math.abs(p.y - start.y) / 2, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    last = p;
+  }
+  pad.addEventListener('pointermove', pointerMove);
+  pad.addEventListener('pointerup', () => { drawing = false; });
+
+  document.getElementById('stamp').onclick = () =>
+    stampBall(80 + Math.random() * (pad.width - 160), 70 + Math.random() * (pad.height - 140), 0.5 + Math.random() * 0.8);
+  document.getElementById('clear').onclick = () => { ctx.fillStyle = bg; ctx.fillRect(0, 0, pad.width, pad.height); };
+  document.getElementById('save').onclick = () => {
+    const a = document.createElement('a');
+    a.download = 'my_testicles.png'; a.href = pad.toDataURL('image/png'); a.click();
+  };
+
+  // ---- dialogs & jokes ----
+  const dlg = document.getElementById('dlg'), msg = document.getElementById('dlg-msg');
+  const say = t => { msg.textContent = t; dlg.classList.add('show'); dlg.querySelector('.foot button').focus(); };
+  dlg.querySelectorAll('[data-close]').forEach(b => b.onclick = () => dlg.classList.remove('show'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') dlg.classList.remove('show'); });
+  const NOPE = [
+    'Save changes to $TESTICLES.bmp?\n\nYou cannot close this. You are holding.',
+    'This program has performed an illegal operation: selling.\nRequest denied.',
+    'Not enough memory to minimize the sack.'
+  ];
+  document.querySelectorAll('[data-nope]').forEach((b, i) => b.onclick = () => say(NOPE[i % NOPE.length]));
+  document.querySelector('[data-help]').onclick = e => { e.preventDefault(); say('Help Topics:\n1. Buy $TESTICLES.\n2. Hold $TESTICLES.\n3. There is no step 3.'); };
+  msg.style.whiteSpace = 'pre-line';
+
+  document.getElementById('copy').onclick = () => {
+    const v = document.getElementById('ca').value;
+    (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(() => {});
+    say('Copied to clipboard:\n' + v);
+  };
+
+  document.getElementById('scroller').addEventListener('pointermove', e => {
+    if (e.target === pad) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    coords.textContent = Math.round(e.clientX - r.left) + ',' + Math.round(e.clientY - r.top + e.currentTarget.scrollTop);
+  });
+})();
+</script>
+</body>
+</html>
